@@ -1,5 +1,6 @@
 package me.alfredobejarano.tictactoe.data
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -11,6 +12,7 @@ import androidx.room.PrimaryKey
  */
 @Entity(tableName = "scoreboards_table")
 data class Scoreboard(
+    @ColumnInfo(name = "pk")
     @PrimaryKey(autoGenerate = true)
     var id: Int,
     var result: Result
