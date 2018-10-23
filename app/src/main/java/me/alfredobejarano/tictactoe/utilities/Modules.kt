@@ -5,6 +5,7 @@ import dagger.Module
 import dagger.Provides
 import me.alfredobejarano.tictactoe.data.AppDatabase
 import me.alfredobejarano.tictactoe.data.ScoreboardDao
+import me.alfredobejarano.tictactoe.data.ScoreboardRepository
 import javax.inject.Singleton
 
 /**
@@ -16,9 +17,10 @@ import javax.inject.Singleton
  * @since 22/10/18 - 11:21 PM
  * @version 1.0
  **/
+
 /**
  * Module class that tells to dagger how to provide
- * a [ScoreboardDao] when requested from injection.
+ * a [ScoreboardDao] instance when requested from injection.
  */
 @Module
 class ScoreboardDaoModule(private val ctx: Context) {
@@ -33,4 +35,21 @@ class ScoreboardDaoModule(private val ctx: Context) {
     @Singleton
     fun provideScoreboardDao() =
         AppDatabase.getInstance(ctx).getScoreboardDao()
+}
+
+/**
+ * Module class that tells to dagger how to provide
+ * a [ScoreboardRepository] instance when requested from injection.
+ */
+@Module
+class ScoreboardRepositoryModule() {
+    /**
+     * Creates a new [ScoreboardRepository] object
+     * and provides it when requested.
+     * @return [ScoreboardRepository] object with a [ScoreboardDao] injected to it.
+     */
+    @Provides
+    @Singleton
+    fun provideScoreboardRepositoryModule(dao: ScoreboardDao) =
+        ScoreboardRepository(dao)
 }
