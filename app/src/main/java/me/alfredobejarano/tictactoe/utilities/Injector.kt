@@ -4,7 +4,9 @@ import android.app.Application
 
 /**
  *
- * [Write your documentation here]
+ * Object class that provides Singleton access to this
+ * application dagger component that allows to perform injection
+ * for classes that use the @Inject annotations on its fields.
  *
  * @author Alfredo Bejarano
  * @since 23/10/18
