@@ -12,11 +12,15 @@ import androidx.room.PrimaryKey
  */
 @Entity(tableName = "scoreboards_table")
 data class Scoreboard(
-    @ColumnInfo(name = "pk")
-    @PrimaryKey(autoGenerate = true)
-    var id: Int,
     var result: Result
 ) {
+    /**
+     * Used by Room to identify a game result.
+     */
+    @ColumnInfo(name = "pk")
+    @PrimaryKey(autoGenerate = true)
+    var id: Int = 0
+
     /**
      * Inner enum class that provides values representing the result of a game.
      * @author Alfredo Bejarano
