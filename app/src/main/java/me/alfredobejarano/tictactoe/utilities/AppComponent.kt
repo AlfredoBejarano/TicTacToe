@@ -17,7 +17,8 @@ import javax.inject.Singleton
 @Component(
     modules = [
         ScoreboardDaoModule::class,
-        ScoreboardRepositoryModule::class
+        ScoreboardRepositoryModule::class,
+        ScoreboardViewModelFactoryModule::class
     ]
 )
 interface AppComponent {

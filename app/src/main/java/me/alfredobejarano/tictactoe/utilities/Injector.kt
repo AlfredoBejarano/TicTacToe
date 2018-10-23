@@ -30,6 +30,7 @@ object Injector {
             .builder()
             .scoreboardDaoModule(ScoreboardDaoModule(mApp))
             .scoreboardRepositoryModule(ScoreboardRepositoryModule())
+            .scoreboardViewModelFactoryModule(ScoreboardViewModelFactoryModule())
             .build()
     }
 
