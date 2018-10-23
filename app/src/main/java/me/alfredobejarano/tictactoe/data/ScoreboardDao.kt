@@ -1,5 +1,6 @@
 package me.alfredobejarano.tictactoe.data
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -23,6 +24,15 @@ interface ScoreboardDao {
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertOrUpdate(record: Scoreboard)
+
+    /**
+     * Returns the amount of games that finalized in a given result.
+     * @param result The expected result for the games to be counted.
+     * @return The amount of records that match the given result, wrapped in a [LiveData]
+     * object for observation.
+     */
+    @Query("SELECT COUNT(*) FROM scoreboards_table WHERE result = :result")
+    fun countGamesByResult(result: Scoreboard.Result): LiveData<Int>
 
     /**
      * Nukes the [Scoreboard] table, deleting all records from it.
