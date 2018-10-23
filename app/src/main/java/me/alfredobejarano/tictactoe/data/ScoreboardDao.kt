@@ -32,7 +32,7 @@ interface ScoreboardDao {
      * object for observation.
      */
     @Query("SELECT COUNT(*) FROM scoreboards_table WHERE result = :result")
-    fun countGamesByResult(result: Scoreboard.Result): LiveData<Int>
+    fun countGamesByResult(result: Scoreboard.Result): Int
 
     /**
      * Nukes the [Scoreboard] table, deleting all records from it.
