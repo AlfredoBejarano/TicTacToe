@@ -54,7 +54,7 @@ class GameViewModel : ViewModel() {
     /**
      * Defines the current player playing, by default is the player 1.
      */
-    private var currentPlayer = PLAYER_1_CHAR
+    var currentPlayer = PLAYER_1_CHAR
 
     /**
      * [MutableLiveData] object that provides observation of the mBoard to the UI.
@@ -65,6 +65,10 @@ class GameViewModel : ViewModel() {
      * [MutableLiveData] object that provides observation of about which player won a game.
      */
     var gameStatus = MutableLiveData<HashMap<Boolean, Char>>()
+
+    init {
+        board.value = charArrayOf(' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ')
+    }
 
     /**
      * Restores the data of a game that has been stored in OnSavedStateInstance.
