@@ -155,12 +155,14 @@ class GameViewModel : ViewModel() {
         val winnerPlayer: Char
         // Now, check if the game has been won by a row or a column match.
         for (i in 0 until 3) {
+            val byRow = isGameWonHorizontally(i)
+            val byColumn = isGameWonVertically(i)
             // Stop the game if there is a row or column match.
-            stopGame = isGameWonHorizontally(i) || isGameWonVertically(i)
+            stopGame = byRow || byColumn
             if (stopGame) {
                 // If the game has to be stopped, set the winner player as the char
                 // in the current position, if not, set is as the draw character.
-                winnerPlayer = if (stopGame) mBoard[i] else EMPTY_CHAR
+                winnerPlayer = if (byRow) mBoard[i * 3] else mBoard[i]
                 // Finally, report the results.
                 return HashMap<Boolean, Char>().also {
                     it[stopGame] = winnerPlayer
