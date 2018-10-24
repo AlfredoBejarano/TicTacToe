@@ -33,12 +33,11 @@ class ScoreboardViewModel
     /**
      * Reads the scoreboard from the local storage.
      */
-    private fun readScoreboard() = runOnIOThread {
-        val scores = Array(3) {
-            repo.getGamesWonBy(RESULT_P1_WINS)
-            repo.getGamesWonBy(RESULT_P2_WINS)
-            repo.getGamesWonBy(RESULT_TIE)
-        }
+    fun readScoreboard() = runOnIOThread {
+        val scores = Array(3) { 0 }
+        scores[0] = repo.getGamesWonBy(RESULT_P1_WINS)
+        scores[1] = repo.getGamesWonBy(RESULT_TIE)
+        scores[2] = repo.getGamesWonBy(RESULT_P2_WINS)
         scoreboard.postValue(scores)
     }
 

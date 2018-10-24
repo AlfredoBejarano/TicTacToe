@@ -16,7 +16,13 @@ import me.alfredobejarano.tictactoe.viewmodel.ScoreboardViewModel
 import java.util.*
 import javax.inject.Inject
 
-class GameActivity : AppCompatActivity() {
+/**
+ * Main activity of this app, this activity displays the game board.
+ * @author Alfredo Bejarano
+ * @since October 24th, 2018 - 01:34 PM
+ * @version 1.0
+ */
+class GameActivity : AppCompatActivity(), BoardAdapter.OnCellClickedListener {
     companion object {
         private const val SAVED_BOARD_EXTRA = "me.alfredobejarano.tictactoe.SAVED_BOARD_EXTRA"
         private const val SAVED_PLAYER_EXTRA = "me.alfredobejarano.tictactoe.SAVED_PLAYER_EXTRA"
@@ -37,8 +43,13 @@ class GameActivity : AppCompatActivity() {
      */
     private lateinit var scoreboardVM: ScoreboardViewModel
 
+    /**
+     * Creates this activity, observes the ViewModels and initializes the injector.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Initializes the dagger Injector.
+        Injector.initialize(application)
         // Inject this class dependencies
         Injector.component.inject(this)
         // Retrieve the scoreboard ViewModel for this activity.
@@ -106,6 +117,8 @@ class GameActivity : AppCompatActivity() {
                     scoreboardVM.saveScoreboard(results[gameEnded] ?: ' ')
                     // Restart the game.
                     gameVM.restartGame()
+                    // Read the Scoreboard
+                    scoreboardVM.readScoreboard()
                 }
             }
         })
@@ -120,4 +133,6 @@ class GameActivity : AppCompatActivity() {
      * Deletes all the stored game results.
      */
     fun resetScoreboard(v: View) = scoreboardVM.clearScoreboard()
+
+    override fun onCellClicked(cellPosition: Int) = gameVM.performPlay(cellPosition)
 }
