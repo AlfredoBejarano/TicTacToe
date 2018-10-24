@@ -2,4 +2,7 @@
     <string name="app_name">TicTacToe</string>
     <string name="reset_scoreboard">reset scoreboard</string>
     <string name="restart_game">restart game</string>
+    <string name="player_triumphs">Player %s wins: %s</string>
+    <string name="ties">Draws: %s</string>
+    <string name="winner">%s wins!</string>
 </resources>
