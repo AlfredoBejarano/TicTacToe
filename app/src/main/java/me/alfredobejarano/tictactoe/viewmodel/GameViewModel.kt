@@ -16,12 +16,6 @@ import me.alfredobejarano.tictactoe.utilities.runOnIOThread
 class GameViewModel : ViewModel() {
     companion object {
         /**
-         * Defines the size of the grid, in the case of a
-         * common Tic-Tac-Toe game, it is 3 by 3.
-         */
-        private const val GRID_SIZE = 3
-
-        /**
          * Defines the character for the player 1.
          */
         const val PLAYER_1_CHAR = 'X'
@@ -35,6 +29,11 @@ class GameViewModel : ViewModel() {
          * Defines the char for when a game has been tied.
          */
         private const val GAME_TIE_CHAR = 'T'
+
+        /**
+         * Defines an empty position.
+         */
+        private const val EMPTY_CHAR = ' '
     }
 
     /**
@@ -43,7 +42,7 @@ class GameViewModel : ViewModel() {
     private var mBoard = CharArray(9).also { array ->
         // When created, set all the elements as empty.
         array.forEachIndexed { index, _ ->
-            array[index] = ' '
+            array[index] = EMPTY_CHAR
         }
     }
 
@@ -63,7 +62,7 @@ class GameViewModel : ViewModel() {
     val board = MutableLiveData<CharArray>()
 
     /**
-     * [MutableLiveData] object that provides observation of tabout which player won a game.
+     * [MutableLiveData] object that provides observation of about which player won a game.
      */
     var gameStatus = MutableLiveData<HashMap<Boolean, Char>>()
 
@@ -74,6 +73,7 @@ class GameViewModel : ViewModel() {
         board.postValue(savedBoard)
         mBoard = savedBoard
         currentPlayer = player
+        refreshGameStatus()
     }
 
     /**
@@ -84,7 +84,7 @@ class GameViewModel : ViewModel() {
         currentPlayer = PLAYER_1_CHAR
         // Empty all the board positions.
         mBoard.forEachIndexed { index, _ ->
-            mBoard[index] = ' '
+            mBoard[index] = EMPTY_CHAR
         }
         // Report the board changes to the UI.
         board.postValue(mBoard)
@@ -94,21 +94,20 @@ class GameViewModel : ViewModel() {
      * Fills an element in the array at a given position
      * (square), as the mBoard is a grid, the position is
      * communicated using x,y coordinates.
-     * @param xPos The x position of the pressed square.
-     * @param yPos the y position of the pressed square.
+     * @param cell The number of cell that the play is going to be performed.
      */
-    fun performPlay(xPos: Int, yPos: Int) = runOnIOThread {
+    fun performPlay(cell: Int) = runOnIOThread {
         // If the element at the position is empty, we can fill it with the current player char.
-        if (getCellValue(xPos, yPos) == ' ' && !ended) {
+        if (mBoard[cell] == EMPTY_CHAR && !ended) {
             // Perform the play.
-            mBoard[GRID_SIZE * xPos * yPos] = currentPlayer
+            mBoard[cell] = currentPlayer
             // Report to the UI that the mBoard has changed.
             board.postValue(mBoard)
             // Switch the players.
             switchPlayers()
+            // After performing a play, check if the game has finished.
+            refreshGameStatus()
         }
-        // After performing a play, check if the game has finished.
-        checkGameFinished()
     }
 
     /**
@@ -124,23 +123,17 @@ class GameViewModel : ViewModel() {
     }
 
     /**
-     * Retrieves the current char value of a given cell.
-     * @return [Char] value at a given cell.
-     */
-    private fun getCellValue(xPos: Int, yPos: Int) = mBoard[GRID_SIZE * xPos * yPos]
-
-    /**
      * Checks if a game has been finished, that means if a game
      * has ben won / tied and reports to the ended flag if the game
      * can be continued or not.
      */
-    private fun checkGameFinished() {
+    private fun refreshGameStatus() {
         // Get the boolean value, reporting if the game has ended or not.
-        val results = getGameResults()
+        val status = getGameStatus()
         // Report the new value of the ended flag.
-        ended = results.keys.first()
+        ended = status.keys.first()
         // Report to the UI the winner.
-        gameStatus.postValue(results)
+        gameStatus.postValue(status)
     }
 
     /**
@@ -149,88 +142,83 @@ class GameViewModel : ViewModel() {
      * @return HashMap containing the results of the last play, the key being if the game has finished
      * and a char value defining which player won.
      */
-    private fun getGameResults(): HashMap<Boolean, Char> {
-        // Create the results HashMap.
-        val results = HashMap<Boolean, Char>()
-        // Check if the game has been won by a cross.
-        if (isGameWonByCross(true) || isGameWonByCross(false)) {
-            /*
-                If the game has been won by a cross, it means those 3 crossing cells
-                (left to right or right to left) are the same, so, for winning by cross,
-                the center cell has to be the same as the other that performs the cross,
-                so lets take the char in the center cell.
-             */
-            results[true] = getCellValue(1, 1)
-            return results
-        }
-        // Now, check if the game has been won by a Row or a Column.
+    private fun getGameStatus(): HashMap<Boolean, Char> {
+        // Define the variable for stopping the game or not.
+        var stopGame: Boolean
+        // Define the variable for the winner player.
+        val winnerPlayer: Char
+        // Now, check if the game has been won by a row or a column match.
         for (i in 0 until 3) {
-            /*
-                So, if a game is won by a row, any value of the current row
-                is the same, so we can take the 0,0 position and it will be the
-                same char as any 0,n position, the same applies for a column.
-            */
-            if (isGameWonHorizontally(i) || isGameWonVertically(i)) {
-                results[true] = getCellValue(i, i)
-                return results
+            // Stop the game if there is a row or column match.
+            stopGame = isGameWonHorizontally(i) || isGameWonVertically(i)
+            if (stopGame) {
+                // If the game has to be stopped, set the winner player as the char
+                // in the current position, if not, set is as the draw character.
+                winnerPlayer = if (stopGame) mBoard[i] else EMPTY_CHAR
+                // Finally, report the results.
+                return HashMap<Boolean, Char>().also {
+                    it[stopGame] = winnerPlayer
+                }
             }
         }
-        /*
-            After checking all the possible game win conditions,
-            lets check if the game is not a draw.
-        */
-        results[isGameDraw()] = GAME_TIE_CHAR
-        return results
+        winnerPlayer = when {
+            isGameWonByCross() -> mBoard[4] // Set the char at the center as the winner if there is a cross match.
+            isGameDraw() -> GAME_TIE_CHAR // Set the tie char if there is no winner.
+            else -> EMPTY_CHAR // Set the empty char if the game has to continue.
+        }
+        // If the winner player is different from the empty char, the game has to be stopped.
+        stopGame = winnerPlayer != EMPTY_CHAR
+        // Finally, report the results.
+        return HashMap<Boolean, Char>().also {
+            it[stopGame] = winnerPlayer
+        }
     }
 
     /**
      * Checks if a position in the mBoard is an empty char (' '),
      * if there is any empty position, it means the game can be
      * continued, if there aren't any more empty spaces and no win
-     * condition has been met (see the [getGameResults] function) the game
+     * condition has been met (see the [getGameStatus] function) the game
      * is a Draw.
-     * @see getGameResults
+     * @see getGameStatus
      * @return true if the mBoard has no empty positions.
      */
-    private fun isGameDraw(): Boolean {
-        // Iterate through each char on the mBoard.
-        mBoard.forEach {
-            // If there is an empty position, return false, as the game can't be a draw yet.
-            if (it == ' ') {
-                return false
-            }
-        }
-        // If the mBoard has no empty positions, the game is a draw.
-        return true
-    }
+    private fun isGameDraw() = !mBoard.contains(' ')
 
     /**
-     * Checks if the 3 values of a given row are the same.
-     * @param row The row to check if the values are the same.
+     * Checks if the 3 consecutive values are the same.
+     * @param row The row number to check.
      */
-    private fun isGameWonHorizontally(row: Int) =
-        getCellValue(0, row) == getCellValue(1, row) &&
-                getCellValue(0, row) == getCellValue(2, row)
+    private fun isGameWonHorizontally(row: Int): Boolean {
+        // For checking values in a row, it has to be multiplied by the grid size (3).
+        val rowAsPosition = row * 3
+        // Check if the 3 consecutive values are equals within each other.
+        return mBoard[rowAsPosition] != EMPTY_CHAR &&
+                mBoard[rowAsPosition] == mBoard[rowAsPosition + 1] &&
+                mBoard[rowAsPosition + 1] == mBoard[rowAsPosition + 2]
+    }
 
     /**
      * Checks if the 3 values of a given column are the same.
      * @param column The row to check if the values are the same.
      */
     private fun isGameWonVertically(column: Int) =
-        getCellValue(column, 0) == getCellValue(column, 1) &&
-                getCellValue(column, 0) == getCellValue(column, 2)
+        mBoard[column] != EMPTY_CHAR &&
+                mBoard[column] == mBoard[column + 3] &&
+                mBoard[column + 3] == mBoard[column + 6]
 
     /**
      * Checks if the values from a diagonal (upper left to bottom right and vice-versa)
      * cross are the same.
      */
-    private fun isGameWonByCross(leftCross: Boolean): Boolean {
-        // If it is a left cross check, the starting cell is 0,0; if not the starting cell is 0,2.
-        val startRow = if (leftCross) 0 else 2
-        // If it is a left cross check, the last cell is 2,2; if not the last cell is 0,2.
-        val lastRow = if (leftCross) 2 else 0
+    private fun isGameWonByCross(): Boolean {
+        // Check a left-to-right cross.
+        val isLeftCross = mBoard[0] != EMPTY_CHAR &&
+                mBoard[0] == mBoard[4] && mBoard[4] == mBoard[8]
+        // Check a right-to-left cross.
+        val isRightCross = mBoard[2] != EMPTY_CHAR &&
+                mBoard[2] == mBoard[4] && mBoard[4] == mBoard[6]
         // Check for the cross
-        return getCellValue(startRow, 0) == getCellValue(1, 1) &&
-                getCellValue(startRow, 0) == getCellValue(lastRow, 2)
+        return isLeftCross || isRightCross
     }
 }
