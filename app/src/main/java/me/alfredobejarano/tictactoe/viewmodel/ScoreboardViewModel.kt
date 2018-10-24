@@ -24,16 +24,30 @@ class ScoreboardViewModel
      * [MutableLiveData] object that allows to the UI observe the amount of games won by a player.
      * The array structure is as follow (P1 wins, P2 Wins, Ties).
      */
-    var scoreboard = MutableLiveData<IntArray>()
+    var scoreboard = MutableLiveData<Array<Int>>()
 
     init {
-        runOnIOThread {
-            val scores = IntArray(3)
-            scores[0] = repo.getGamesWonBy(RESULT_P1_WINS)
-            scores[1] = repo.getGamesWonBy(RESULT_P2_WINS)
-            scores[2] = repo.getGamesWonBy(RESULT_TIE)
-            scoreboard.postValue(scores)
+        readScoreboard()
+    }
+
+    /**
+     * Reads the scoreboard from the local storage.
+     */
+    private fun readScoreboard() = runOnIOThread {
+        val scores = Array(3) {
+            repo.getGamesWonBy(RESULT_P1_WINS)
+            repo.getGamesWonBy(RESULT_P2_WINS)
+            repo.getGamesWonBy(RESULT_TIE)
         }
+        scoreboard.postValue(scores)
+    }
+
+    /**
+     * Deletes all the stored records for each player and draws.
+     */
+    fun clearScoreboard() = runOnIOThread {
+        repo.clearGameRecords()
+        readScoreboard()
     }
 
     /**
