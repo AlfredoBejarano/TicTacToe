@@ -18,6 +18,9 @@ android {
         buildConfigField "int", "DATABASE_VERSION", "1"
         buildConfigField "String", "DATABASE_NAME", '"' + applicationId + "-db" + '"'
     }
+    dataBinding {
+        enabled = true
+    }
     buildTypes {
         release {
             minifyEnabled false
@@ -41,6 +44,8 @@ dependencies {
     kapt 'com.google.dagger:dagger-compiler:2.16'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'androidx.appcompat:appcompat:1.0.0'
+    implementation "androidx.lifecycle:lifecycle-extensions:2.0.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel:2.0.0"
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.1.0-beta02'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0-beta02'
