@@ -1,13 +1,12 @@
 package me.alfredobejarano.tictactoe.adapter
 
 import android.graphics.Color
-import android.view.Gravity
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import me.alfredobejarano.tictactoe.callback.BoardDiffCallback
+import me.alfredobejarano.tictactoe.R
 import me.alfredobejarano.tictactoe.viewmodel.GameViewModel
 
 /**
@@ -24,9 +23,10 @@ class BoardAdapter(private var board: CharArray) : RecyclerView.Adapter<BoardAda
      * Creates a Cell for the RecyclerView.
      */
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        CellViewHolder(TextView(parent.context).also {
-            it.gravity = Gravity.CENTER
-        })
+        CellViewHolder(
+            LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_cell, parent, false)
+        )
 
     /**
      * As a 3 by 3 grid, the amount of cells has to be 9.
@@ -39,7 +39,7 @@ class BoardAdapter(private var board: CharArray) : RecyclerView.Adapter<BoardAda
      */
     override fun onBindViewHolder(holder: CellViewHolder, position: Int) {
         // Set the text color depending on the char being rendered.
-        holder.cell.setTextColor(
+        holder.cell?.setTextColor(
             when (board[position]) {
                 GameViewModel.PLAYER_1_CHAR -> Color.RED
                 GameViewModel.PLAYER_2_CHAR -> Color.BLUE
@@ -47,24 +47,30 @@ class BoardAdapter(private var board: CharArray) : RecyclerView.Adapter<BoardAda
             }
         )
         // Set the board char as the cell text.
-        holder.cell.text = board[position].toString()
+        holder.cell?.text = board[position].toString()
+
+        // Enable the clicking behaviour for performing plays.
+        holder.itemView.setOnClickListener {
+            if (it.context is OnCellClickedListener) {
+                (it.context as OnCellClickedListener).onCellClicked(position)
+            }
+        }
     }
 
     /**
      * Updates the board with a new board.
      */
     fun setBoard(newBoard: CharArray) {
-        // Get which cell was changed from the old board to the new board.
-        val diffResult = DiffUtil.calculateDiff(BoardDiffCallback(board, newBoard))
-        // Now report to this adapter which cell was changed for it to redraw it.
-        diffResult.dispatchUpdatesTo(this)
+        // Change the board.
+        board = newBoard
+        notifyDataSetChanged()
     }
 
     class CellViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         /**
          * The cell view that can be clicked for performing a play.
          */
-        internal val cell = itemView as TextView
+        internal val cell = itemView.findViewById<TextView?>(R.id.cell)
     }
 
     /**
