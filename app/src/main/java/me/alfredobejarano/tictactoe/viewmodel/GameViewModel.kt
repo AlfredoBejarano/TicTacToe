@@ -90,6 +90,8 @@ class GameViewModel : ViewModel() {
         mBoard.forEachIndexed { index, _ ->
             mBoard[index] = EMPTY_CHAR
         }
+        // Set the game as not finished.
+        ended = false
         // Report the board changes to the UI.
         board.postValue(mBoard)
     }
