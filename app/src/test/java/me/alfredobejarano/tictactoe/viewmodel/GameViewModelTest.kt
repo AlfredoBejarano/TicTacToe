@@ -19,7 +19,7 @@ import org.mockito.junit.MockitoJUnitRunner
 @RunWith(MockitoJUnitRunner::class)
 class GameViewModelTest {
     companion object {
-        private const val OBSERVATION_TIMEOUT = 50000L
+        private const val OBSERVATION_TIMEOUT = 2500L
     }
 
     // Create a new object for the test to run against it.
@@ -107,6 +107,11 @@ class GameViewModelTest {
         // Verify that the observer saw a change.
         verify(mockStatusObserver, timeout(OBSERVATION_TIMEOUT))
             .onChanged(any())
+        // Sets the order for the board changes.
+        inOrder(mockBoardObserver)
+        // Finally, check if the players were switched, using the expected board
+        verify(mockBoardObserver)
+            .onChanged(charArrayOf('X', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '))
         // Perform a play in the same position.
         vm.performPlay(0)
         // Assert that no changes were made to the game status,
@@ -114,6 +119,8 @@ class GameViewModelTest {
         verifyZeroInteractions(mockStatusObserver)
         // Make a play in an empty cell.
         vm.performPlay(1)
+        // Wait for the board live data to respond.
+        Thread.sleep(OBSERVATION_TIMEOUT)
         // Finally, check if the players were switched, using the expected board
         verify(mockBoardObserver, times(2))
             .onChanged(expectedBoard)
